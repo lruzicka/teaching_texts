@@ -1,0 +1,32 @@
+==== Práva uživatelů ====
+
+=== Co jsou to práva? ===
+
+V Linuxu má každý uživatel právo k některým činnostem, například procházet adresáře, číst a zapisovat soubory, pracovat se zařízeními a systémovými prostředky. V případě, že nějaký uživatel nemá práva k určité činnosti, nemůže tuto činnost v systému dělat. Každý uživatel dostatek práv na to, aby mohl smysluplně se systémem pracovat tak, jak potřebuje, aniž by se cítil nějak omezený. Zároveň je velmi snadné zmocnit se lepších práv přímo za běhu, není většinou nutné se znovu přihlašovat nebo střídat účty. To nenutí uživatele kvůli lenosti pracovat pro jistotu neustále pod plnými právy administrátora (co kdyby se to hodilo). Také aplikace velmi dobře pracují v rámci omezených práv a obvykle se nestává, že by aplikace měla s omezenými právy omezenou funkcionalitu, jak známe z jiných operačních systémů. Zkrátka potenciálně rizikové chování, kdy pracuju s účtem správce, abych si mohl v příhodnou dobu bezproblémově nainstalovat další potřebné doplňky, není vůbec zapotřebí.
+
+Fakt, že uživatelé a jimi spouštěné aplikace a programy mají omezená práva, a že není potřeba tyto práva nikterak navyšovat pro běžný uživatelský provoz, je jedním z důvodů, proč je operační systém Linux robustní a bezpečný operační systém.
+
+
+=== Vlastník ===
+
+Všechny procesy, zařízení a data v Linuxu jsou v systému reprezentovány odkazy, které se chovají jako běžný soubor. Každý takový soubor má tři úrovně vlastníků, kteří mohou k souboru získat nějaký typ oprávnění. Pro každou úroveň je možné definovat jiná práva a tak řídit přístup uživatelů (nebo procesů) ke všem systémovým zdrojům a datům. Tyto jsou reprezentovány:
+
+
+    * uživatel (user)
+    * skupina uživatelů (group)
+    * všichni ostatní (others)
+
+Ve většině případů se při vytváření nového souboru, ať už ho vytváříme ručně, nebo pomocí nějaké aplikace nastaví jak //uživatel//, tak //skupina// podle uživatele, který soubor vytvořil. Podívejme se na adresářový výpis, který jsme získali příkazem **ls -l**:
+
+<code>
+-rw-rw-r--. 1 lruzicka lruzicka   52 Sep 27 16:29 README.md
+-rw-rw-r--. 1 lruzicka lruzicka 2243 Sep 27 16:55 wiki_prava.txt
+</code>
+
+Zde vidíme, že oba soubory, //README.md// i //wiki_prava.txt//, vlastní uživatel i skupina //lruzicka//. 
+ 
+
+Přístupová práva
+
+
+
