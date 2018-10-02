@@ -7,26 +7,118 @@ V Linuxu má každý uživatel právo k některým činnostem, například proch
 Fakt, že uživatelé a jimi spouštěné aplikace a programy mají omezená práva, a že není potřeba tyto práva nikterak navyšovat pro běžný uživatelský provoz, je jedním z důvodů, proč je operační systém Linux robustní a bezpečný operační systém.
 
 
-=== Vlastník ===
+=== Práva v Linuxu ===
 
-Všechny procesy, zařízení a data v Linuxu jsou v systému reprezentovány odkazy, které se chovají jako běžný soubor. Každý takový soubor má tři úrovně vlastníků, kteří mohou k souboru získat nějaký typ oprávnění. Pro každou úroveň je možné definovat jiná práva a tak řídit přístup uživatelů (nebo procesů) ke všem systémovým zdrojům a datům. Tyto jsou reprezentovány:
+Všechny procesy, zařízení a data v Linuxu jsou v systému reprezentovány odkazy, které se chovají jako běžný soubor, dále tedy budeme hovořit pouze o právech k souborům. Ke každému souboru může uživatel získat nějaká práva, která umožňují nebo neumožňují některé akce. Lze povolit nebo odepřít následující:
 
+    * číst ze souboru (r)
+    * zapisovat do souboru (w)
+    * spouštět soubor či vstupovat do adresáře (x)
 
-    * uživatel (user)
-    * skupina uživatelů (group)
-    * všichni ostatní (others)
+Tato základní práva lze nastavit pro tři různé úrovně uživatelů:
 
-Ve většině případů se při vytváření nového souboru, ať už ho vytváříme ručně, nebo pomocí nějaké aplikace nastaví jak //uživatel//, tak //skupina// podle uživatele, který soubor vytvořil. Podívejme se na adresářový výpis, který jsme získali příkazem **ls -l**:
+    * konkrétního uživatele, vlastníka souboru (zpravidla ten, kdo soubor vytvořil)
+    * jednu konkrétní skupinu uživatelů (např. studenti)
+    * všechny ostatní
+
+Takto lze například nastavit, aby vlastník souboru (učitel) mohl ze souboru číst a také do něj zapisovat, všichni jeho žáci ze skupiny studenti z něj mohli číst, ale nemohli do něj zapisovat, a všichni ostatní (další žáci školy) k němu neměli žádná práva. Vzápětí si vysvětlíme, jak toho dosáhnout.
+
+== Zjišťujeme, jaká práva má soubor ==
+
+Jaká práva který soubor má, si můžeme lehce zobrazit pomocí příkazu **ls -l**. Podívejme se na následující výstup:
 
 <code>
--rw-rw-r--. 1 lruzicka lruzicka   52 Sep 27 16:29 README.md
--rw-rw-r--. 1 lruzicka lruzicka 2243 Sep 27 16:55 wiki_prava.txt
+-rw-rw-r--. 1 teacher students 1220 Jul 24 18:10 find.py
 </code>
 
-Zde vidíme, že oba soubory, //README.md// i //wiki_prava.txt//, vlastní uživatel i skupina //lruzicka//. 
- 
+Informace, které můžeme vidět zahrnují (od konce řádku):
+    * jméno souboru (find.py)
+    * datum a čas vytvoření (Jul 24 18:10)
+    * velikost souboru (1220 bytů)
+    * skupinu, která má k souboru práva (students)
+    * uživatele, který má práva (teacher)
+    * ????? (1)
+    * samotný výpis práv (-rw-rw-r--.)
 
-Přístupová práva
+== Interpretujeme výpis práv ==
+
+V předcházejícím příkladu jsme viděli, že práva jsou u každého souboru zapsána jako kombinace tří tripletů (tedy devíti znaků), které jsou vypsány za sebou v pořadí uživatel, skupina, ostatní. V tomto případě konkrétné *-rw-rw-r--.*.
+Nebudeme si všímat první pozice, která označuje, zda se jedná o soubor nebo adresář. Taktéž zatím přeskočíme tečku na konci, která symbolizuje absenci ACL práv, jak se dozvíme později. Zaměříme se teda na znaky *rw-rw-r--*. Z těch vyplývá, že soubor umožňuje:
+
+    * uživateli soubor číst a zapisovat (rw-)
+    * skupině také číst a zapisovat (rw-)
+    * všem ostatním pouze číst (r--)
+
+== Nastavujeme práva souboru ==
+
+Představme si, že výše uvedený soubor, program v Pythonu, chceme také spouštět. Řekněme, že chceme, aby vlastník měl k souboru veškerá práva, skupina studentů mohla soubor číst a také jej spouštět, a všichni ostatní ho mohli pouze číst. Práva souboru nastavíme pomocí příkazu *chmod* (change mode). Pro více informací si můžete spustit také nápovědu pro tento program pomocí příkazu *man chmod*. 
+
+    1. Příkazem <code>chmod u+x find.py</code> přidáme právo spouštět soubor. Volba u+x říká: Uživateli (u) přidej (+) právo spouštění (x). Práva číst a zapisovat už uživatel má, tak je nemusíme přidávat.
+    2. Příkazem <code>chmod g+x find.py</code> přidáme (+) skupině (g) právo spouštět (x) soubor, ale odebereme (-) právo zapisovat (w) příkazem <code>chmod g-w find.py</code>.
+    3. Právo pro ostatní (o) nemusíme nijak upravovat, protože ostatní mohou jenom číst a to chceme.
+
+Když si následně zobrazíme práva pro soubor find.py, dostaneme kombinaci *rwxr-xr--*, teda všechna práva pro uživatele, práva čtení a spouštění pro skupinu a práva pro čtení pro všechny ostatní. To je, co jsme chtěli.
+
+Když si ještě jednou rozebereme jednotlivé volby příkazu chmod:
+
+    * písmena u, g, o zapínají práva pro uživatele, skupinu, nebo ostatní
+    * znaky + nebo - přidávají nebo odebírají příslušná práva
+    * písmena r, w, x řídí práva pro čtení, zápis a spouštění. Lze je také kombinovat, tedy je možné napsat rw pro čtení a zápis zároveň, nebo rx pro čtení a spouštění zároveň, ale také rwx pro přidání všech práv.
+
+== Nastavení pomocí osmičkového (octalového) módu
+
+Někdy nechceme práva nastavovat pro každou úroveň zvlášť, ale potřebujeme rychle nastavit práva pro uživatele, skupinu a ostatní zároveň. To můžeme udělat pomocí číselné kombinace. Na první pohled nemusí být přesně jasné, jak s čísly pracovat, ale pokusme se vysvětlit to na následující tabulce, která nám ukazuje přehled jednotlivých čísel a jejich významů:
+
+<table>
+ <tr>
+    <td>0</td><td>žádná práva</td>
+    <td>1</td><td>právo spouštění (jako x)</td>
+    <td>2</td><td>právo zápisu (jako w)</td>
+    <td>4</td><td>právo čtení (jako r)</td>
+ </tr>
+</table>
+
+Kombinace různých práv potom vypočítáme jakou součet jednotlivých hodnot, můžeme tedy získat 8 různých kombinaci práv, tedy:
+
+<table>
+ <tr>
+    <td>0</td><td>0</td><td>žádná práva</td>
+    <td>1</td><td>0+1</td><td>právo spouštění</td>
+    <td>2</td><td>0+2</td><td>právo zápisu</td>
+    <td>3</td><td>1+2</td><td>právo zápisu a spouštění</td>
+    <td>4</td><td>0+4</td><td>právo čtení</td>
+    <td>5</td><td>1+4</td><td>právo čtení a spouštění</td>
+    <td>6</td><td>2+4</td><td>právo čtení a zápisu</td>
+    <td>7</td><td>1+2+4</td><td>právo čtení, zápisu a spouštění</td>
+ </tr>
+</table>
+
+Předcházející úkol bychom tak jednodušše mohli vyřešit pomocí zápisu <code>chmod 754 find.py</code>, kdy první číslo je pro uživatele, druhé pro skupinu, a třetí pro ostatní.
+
+
+=== Změna vlastníka a skupiny u souboru ===
+
+Někdy je potřeba změnit nastavení vlastníků nebo skupiny. Toho dosáhneme pomocí příkazu *chown* (change owner). V zásadě můžeme tento příkaz použít třemi možnými způsoby:
+
+    1. <code>chown dean find.py</code> udělá vlastníkem souboru find.py uživatele dean, skupina zůstane nezměněná
+    2. <code>chown :executive find.py</code> udělá spoluvlastníkem souboru find.py skupinu executive, vlastník samotný zůstane nezměněn
+    3. <code>chown dean:executive find.py</code> udělá vlastníkem souboru find.py uživatele dean a spoluvlastníky skupinu executive.
+
+Další použití příkazu chown lze nastudovat z manuálových stránek příkazem man chown.
+
+=== Práva a adresáře ===
+
+Práva se týkají také adresářů, ale narozdíl od souborů mají práva u adresářů trochu jiný efekt:
+    * právo pro čtení znamená, že dotyčný může číst obsah příslušného adresáře
+    * právo pro zápis znamená, že dotyčný může do adresáře ukládat soubory
+    * právo pro spouštění znamená, že dotyčný může do adresáře vstoupit
+
+
+=== Rozšířená práva (ACL práva) ===
+
+
+
+
 
 
 
