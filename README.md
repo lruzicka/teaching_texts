@@ -1,2 +1,2 @@
 # teaching_texts
-Collected texts on Linux functions
+Collected texts on various Linux related topics
